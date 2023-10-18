@@ -1,7 +1,14 @@
-use std::{error::Error, ops::Deref};
+use std::{error::Error, io, ops::Deref};
 
 use clap::{command, Parser};
+use crossterm::{
+    event::{DisableMouseCapture, EnableMouseCapture},
+    execute,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+};
+use ratatui::{prelude::CrosstermBackend, Terminal};
 use request::{Method, Request};
+use ui::{run_app, App};
 
 #[derive(Parser)]
 #[command(name = "http-request")]
@@ -18,6 +25,7 @@ struct Cli {
 }
 
 mod request;
+mod ui;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -46,7 +54,30 @@ async fn run_cli(cli: &Cli) -> Result<(), Box<dyn Error>> {
 }
 
 fn run_ui(cli: &Cli) -> Result<(), Box<dyn Error>> {
-    todo!()
+    enable_raw_mode()?;
+    let mut stdout = io::stdout();
+    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+    let backend = CrosstermBackend::new(stdout);
+    let mut terminal = Terminal::new(backend)?;
+
+    // create app and run it
+    let app = App::default();
+    let res = run_app(&mut terminal, app);
+
+    // restore terminal
+    disable_raw_mode()?;
+    execute!(
+        terminal.backend_mut(),
+        LeaveAlternateScreen,
+        DisableMouseCapture
+    )?;
+    terminal.show_cursor()?;
+
+    if let Err(err) = res {
+        println!("{err:?}");
+    }
+
+    Ok(())
 }
 
 async fn send_get(request: Request) -> Result<(), Box<dyn Error>> {
