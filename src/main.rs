@@ -27,7 +27,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let request = Request::from_cli(&cli);
 
     match cli.ui {
-        Some(true) => return run_ui(request.clone()),
+        Some(true) => return run_ui(request.clone()).await,
         Some(false) | None => return run_cli(request.clone()).await,
     }
 }
@@ -36,8 +36,8 @@ async fn run_cli(request: Request) -> Result<(), Box<dyn Error>> {
     send_get(request).await
 }
 
-fn run_ui(request: Request) -> Result<(), Box<dyn Error>> {
-    main_ui(request)
+async fn run_ui(request: Request) -> Result<(), Box<dyn Error>> {
+    main_ui(request).await
 }
 
 async fn send_get(request: Request) -> Result<(), Box<dyn Error>> {

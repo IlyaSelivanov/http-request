@@ -8,7 +8,7 @@ use ratatui::{
 
 use super::{App, InputMode};
 
-pub fn render<B: Backend>(f: &mut Frame<B>, app: &App) {
+pub fn render(f: &mut Frame, app: &App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
