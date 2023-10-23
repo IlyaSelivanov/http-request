@@ -3,6 +3,7 @@ pub struct App {
     pub cursor_position: usize,
     pub input_mode: InputMode,
     pub messages: Vec<String>,
+    pub should_quit: bool,
 }
 
 pub enum InputMode {
@@ -10,18 +11,17 @@ pub enum InputMode {
     Editing,
 }
 
-impl Default for App {
-    fn default() -> App {
+impl App {
+    pub fn new() -> App {
         App {
             input: String::new(),
             input_mode: InputMode::Normal,
             messages: Vec::new(),
             cursor_position: 0,
+            should_quit: false,
         }
     }
-}
 
-impl App {
     pub fn move_cursor_left(&mut self) {
         let cursor_moved_left = self.cursor_position.saturating_sub(1);
         self.cursor_position = self.clamp_cursor(cursor_moved_left);
@@ -64,5 +64,9 @@ impl App {
         self.messages.push(self.input.clone());
         self.input.clear();
         self.reset_cursor();
+    }
+
+    pub fn quit(&mut self) {
+        self.should_quit = true;
     }
 }
