@@ -35,13 +35,16 @@ impl EventHandler {
                     match maybe_event {
                       Some(Ok(evt)) => {
                         match evt {
-                          crossterm::event::Event::Key(key) => {
-                            if key.kind == crossterm::event::KeyEventKind::Press {
-                              tx.send(Event::Key(key)).unwrap();
-                            }
-                          },
-                          _ => {},
-                        }
+                            crossterm::event::Event::Key(key) => {
+                                if key.kind==crossterm::event::KeyEventKind::Press {
+                                    tx.send(Event::Key(key)).unwrap();
+                                }
+                            },
+                            crossterm::event::Event::FocusGained => todo!(),
+                            crossterm::event::Event::FocusLost => todo!(),
+                            crossterm::event::Event::Mouse(_) => todo!(),
+                            crossterm::event::Event::Paste(_) => todo!(),
+                            crossterm::event::Event::Resize(_, _) => todo!(), }
                       }
                       Some(Err(_)) => {
                         tx.send(Event::Error).unwrap();
