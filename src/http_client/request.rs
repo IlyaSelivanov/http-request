@@ -9,6 +9,29 @@ enum HttpMethod {
     Delete,
 }
 
+impl HttpMethod {
+    /// Creates an `HttpMethod` instance from a string slice.
+    pub fn from_str(method: &str) -> Option<Self> {
+        match method {
+            "GET" => Some(HttpMethod::Get),
+            "POST" => Some(HttpMethod::Post),
+            "PUT" => Some(HttpMethod::Put),
+            "DELETE" => Some(HttpMethod::Delete),
+            _ => None,
+        }
+    }
+
+    /// Returns the string representation of the HTTP method.
+    pub fn to_string(&self) -> String {
+        match self {
+            HttpMethod::Get => "GET".to_string(),
+            HttpMethod::Post => "POST".to_string(),
+            HttpMethod::Put => "PUT".to_string(),
+            HttpMethod::Delete => "DELETE".to_string(),
+        }
+    }
+}
+
 /// Represents an HTTP request.
 pub struct HttpRequest {
     method: HttpMethod,
@@ -45,8 +68,22 @@ impl HttpRequest {
     }
 
     /// Sends the HTTP request and returns the HTTP response.
-    pub fn send(&self) -> HttpResponse {
-        HttpResponse::new()
+    pub async fn send(&self) -> HttpResponse {
+        let client = reqwest::blocking::Client::new();
+        let response = client
+            .execute(
+                client
+                    .request(
+                        HttpMethod::from_str(&self.method.to_string()).unwrap(),
+                        &self.url,
+                    )
+                    .headers(self.headers.clone())
+                    .body(self.body.clone().unwrap_or_default()),
+            )
+            .await
+            .unwrap();
+
+        HttpResponse::from_response(response)
     }
 }
 
@@ -85,9 +122,39 @@ mod tests {
     }
 
     #[test]
+    fn test_new_http_request() {
+        let http_request = HttpRequest::new(HttpMethod::Get, "https://www.example.com");
+        assert_eq!(http_request.method, HttpMethod::Get);
+        assert_eq!(http_request.url, "https://www.example.com");
+        assert_eq!(http_request.headers.len(), 0);
+        assert_eq!(http_request.body, None);
+    }
+
+    #[test]
+    fn test_add_header() {
+        let mut http_request = HttpRequest::new(HttpMethod::Get, "https://www.example.com");
+        http_request.add_header("Content-Type", "application/json");
+        assert_eq!(http_request.headers.len(), 1);
+        assert_eq!(
+            http_request.headers[0],
+            ("Content-Type".to_string(), "application/json".to_string())
+        );
+    }
+
+    #[test]
+    fn test_set_body() {
+        let mut http_request = HttpRequest::new(HttpMethod::Post, "https://www.example.com");
+        http_request.set_body(r#"{"name": "John Doe", "age": 30}"#);
+        assert_eq!(
+            http_request.body,
+            Some(r#"{"name": "John Doe", "age": 30}"#.to_string())
+        );
+    }
+
+    #[test]
     fn test_send() {
         let http_request = HttpRequest::new(HttpMethod::Get, "https://www.example.com");
-        let http_response = http_request.send();
+        let http_response = http_request.send().await;
         assert_eq!(http_response.status_code, 200);
         assert_eq!(http_response.body, "");
     }
