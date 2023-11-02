@@ -3,7 +3,7 @@ use reqwest::{
     RequestBuilder,
 };
 
-use crate::{http_client::response::HttpResponse, request};
+use crate::http_client::response::HttpResponse;
 
 /// An enum representing the HTTP methods that can be used in an HTTP request.
 #[derive(Debug, Clone, Copy, PartialEq)]
