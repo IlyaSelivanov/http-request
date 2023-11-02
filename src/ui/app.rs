@@ -1,3 +1,5 @@
+use crate::http_client::HttpRequest;
+
 pub struct App {
     pub input: String,
     pub cursor_position: usize,
@@ -61,8 +63,14 @@ impl App {
         self.cursor_position = 0;
     }
 
-    pub fn submit_message(&mut self) {
+    pub async fn submit_message(&mut self) {
         self.messages.push(self.input.clone());
+
+        let request = HttpRequest::new(crate::http_client::HttpMethod::Get, self.input.as_str());
+        let response = request.send().await;
+
+        self.messages.push(response.status_code.to_string());
+
         self.input.clear();
         self.reset_cursor();
     }

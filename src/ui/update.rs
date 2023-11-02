@@ -2,7 +2,7 @@ use crossterm::event::{KeyCode, KeyEvent};
 
 use super::{App, InputMode};
 
-pub fn update(app: &mut App, key_event: KeyEvent) {
+pub async fn update(app: &mut App, key_event: KeyEvent) {
     match app.input_mode {
         InputMode::Normal => match key_event.code {
             KeyCode::Char('e') => {
@@ -14,7 +14,7 @@ pub fn update(app: &mut App, key_event: KeyEvent) {
             _ => {}
         },
         InputMode::Editing => match key_event.code {
-            KeyCode::Enter => app.submit_message(),
+            KeyCode::Enter => app.submit_message().await,
             KeyCode::Char(to_insert) => {
                 app.enter_char(to_insert);
             }

@@ -30,7 +30,7 @@ pub async fn main_ui() -> Result<(), Box<dyn Error>> {
         tui.draw(&mut app)?;
         match tui.events.next().await? {
             Event::Tick => {}
-            Event::Key(key_event) => update(&mut app, key_event),
+            Event::Key(key_event) => update(&mut app, key_event).await,
             // Event::Mouse(_) => {}
             // Event::Resize(_, _) => {}
             _ => {}

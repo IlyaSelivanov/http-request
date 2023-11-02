@@ -15,7 +15,7 @@
           "kind": "bin"
         }
       },
-      "args": ["-u=https://google.com", "-m=get"],
+      "args": ["--ui=true"],
       "cwd": "${workspaceFolder}"
     },
     {
