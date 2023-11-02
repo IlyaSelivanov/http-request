@@ -8,7 +8,7 @@ use ratatui::{
 
 use super::{App, InputMode};
 
-pub fn render(f: &mut Frame, app: &App) {
+pub fn render(f: &mut Frame, app: &mut App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
@@ -66,22 +66,19 @@ pub fn render(f: &mut Frame, app: &App) {
         ),
     }
 
-    let items: Vec<ListItem> = vec![
-        ListItem::new("GET"),
-        ListItem::new("POST"),
-        ListItem::new("PUT"),
-        ListItem::new("DELETE"),
-    ];
+    let items: Vec<ListItem> = app
+        .methods
+        .items
+        .iter()
+        .map(|m| ListItem::new(m.as_str()))
+        .collect();
 
     let list = List::new(items)
         .block(Block::default().borders(Borders::ALL).title("Method"))
         .highlight_style(Style::default().add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
 
-    let mut state = ListState::default();
-    state.select(Some(1));
-
-    f.render_stateful_widget(list, sub_chunks[1], &mut state);
+    f.render_stateful_widget(list, sub_chunks[1], &mut app.methods.state);
 
     let messages: Vec<ListItem> = app
         .messages

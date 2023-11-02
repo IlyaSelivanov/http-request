@@ -1,11 +1,67 @@
+use ratatui::widgets::ListState;
+
 use crate::http_client::HttpRequest;
 
+/// A generic struct representing a stateful list.
+/// This struct is used to represent a list of items that can be scrolled through and selected.
+/// It keeps track of the current selected index and provides methods for updating the list and
+/// selecting items.
+pub struct StatefulList<T> {
+    pub state: ListState,
+    pub items: Vec<T>,
+}
+
+impl<T> StatefulList<T> {
+    fn with_items(items: Vec<T>) -> StatefulList<T> {
+        StatefulList {
+            state: ListState::default(),
+            items,
+        }
+    }
+
+    fn next(&mut self) {
+        let i = match self.state.selected() {
+            Some(i) => {
+                if i >= self.items.len() - 1 {
+                    0
+                } else {
+                    i + 1
+                }
+            }
+            None => 0,
+        };
+        self.state.select(Some(i));
+    }
+
+    fn previous(&mut self) {
+        let i = match self.state.selected() {
+            Some(i) => {
+                if i == 0 {
+                    self.items.len() - 1
+                } else {
+                    i - 1
+                }
+            }
+            None => 0,
+        };
+        self.state.select(Some(i));
+    }
+
+    fn unselect(&mut self) {
+        self.state.select(None);
+    }
+}
+
+/// A struct representing the application.
+/// This struct contains the main logic for the application, including handling user input and
+/// displaying output to the user.
 pub struct App {
     pub input: String,
     pub cursor_position: usize,
     pub input_mode: InputMode,
     pub messages: Vec<String>,
     pub should_quit: bool,
+    pub methods: StatefulList<String>,
 }
 
 #[derive(PartialEq, Debug)]
@@ -22,6 +78,12 @@ impl App {
             messages: Vec::new(),
             cursor_position: 0,
             should_quit: false,
+            methods: StatefulList::with_items(vec![
+                String::from("GET"),
+                String::from("POST"),
+                String::from("PUT"),
+                String::from("DELETE"),
+            ]),
         }
     }
 
@@ -77,6 +139,14 @@ impl App {
 
     pub fn quit(&mut self) {
         self.should_quit = true;
+    }
+
+    pub fn select_next_method(&mut self) {
+        self.methods.next();
+    }
+
+    pub fn select_previous_method(&mut self) {
+        self.methods.previous();
     }
 }
 

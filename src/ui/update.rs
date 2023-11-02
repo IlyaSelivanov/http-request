@@ -30,6 +30,12 @@ pub async fn update(app: &mut App, key_event: KeyEvent) {
             KeyCode::Esc => {
                 app.input_mode = InputMode::Normal;
             }
+            KeyCode::Up => {
+                app.select_next_method();
+            }
+            KeyCode::Down => {
+                app.select_previous_method();
+            }
             _ => {}
         },
     }
