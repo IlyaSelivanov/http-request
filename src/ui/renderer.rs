@@ -2,7 +2,7 @@ use ratatui::{
     prelude::{Constraint, Direction, Layout},
     style::{Color, Modifier, Style, Stylize},
     text::{Line, Span, Text},
-    widgets::{Block, Borders, List, ListItem, Paragraph},
+    widgets::{Block, Borders, List, ListItem, ListState, Paragraph},
     Frame,
 };
 
@@ -17,6 +17,11 @@ pub fn render(f: &mut Frame, app: &App) {
             Constraint::Min(1),
         ])
         .split(f.size());
+
+    let sub_chunks = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([Constraint::Percentage(80), Constraint::Percentage(20)].as_ref())
+        .split(chunks[1]);
 
     let (msg, style) = match app.input_mode {
         InputMode::Normal => (
@@ -50,8 +55,8 @@ pub fn render(f: &mut Frame, app: &App) {
             InputMode::Normal => Style::default(),
             InputMode::Editing => Style::default().fg(Color::Yellow),
         })
-        .block(Block::default().borders(Borders::ALL).title("Input"));
-    f.render_widget(input, chunks[1]);
+        .block(Block::default().borders(Borders::ALL).title("Url"));
+    f.render_widget(input, sub_chunks[0]);
     match app.input_mode {
         InputMode::Normal => {}
 
@@ -60,6 +65,23 @@ pub fn render(f: &mut Frame, app: &App) {
             chunks[1].y + 1,
         ),
     }
+
+    let items: Vec<ListItem> = vec![
+        ListItem::new("GET"),
+        ListItem::new("POST"),
+        ListItem::new("PUT"),
+        ListItem::new("DELETE"),
+    ];
+
+    let list = List::new(items)
+        .block(Block::default().borders(Borders::ALL).title("Method"))
+        .highlight_style(Style::default().add_modifier(Modifier::BOLD))
+        .highlight_symbol("> ");
+
+    let mut state = ListState::default();
+    state.select(Some(1));
+
+    f.render_stateful_widget(list, sub_chunks[1], &mut state);
 
     let messages: Vec<ListItem> = app
         .messages
