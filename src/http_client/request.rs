@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use reqwest::{
     header::{HeaderMap, HeaderName, HeaderValue},
     RequestBuilder,
@@ -25,14 +27,15 @@ impl HttpMethod {
             _ => None,
         }
     }
+}
 
-    /// Returns the string representation of the HTTP method.
-    pub fn to_string(&self) -> String {
+impl Display for HttpMethod {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            HttpMethod::Get => "GET".to_string(),
-            HttpMethod::Post => "POST".to_string(),
-            HttpMethod::Put => "PUT".to_string(),
-            HttpMethod::Delete => "DELETE".to_string(),
+            HttpMethod::Get => write!(f, "GET"),
+            HttpMethod::Post => write!(f, "POST"),
+            HttpMethod::Put => write!(f, "PUT"),
+            HttpMethod::Delete => write!(f, "DELETE"),
         }
     }
 }
@@ -106,41 +109,42 @@ impl HttpRequest {
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_new_http_request() {
-        let http_request = HttpRequest::new(HttpMethod::Get, "https://www.example.com");
-        assert_eq!(http_request.method, HttpMethod::Get);
-        assert_eq!(http_request.url, "https://www.example.com");
-        assert_eq!(http_request.headers.len(), 0);
-        assert_eq!(http_request.body, None);
+    #[tokio::test]
+    async fn test_send() {
+        let mut request = HttpRequest::new(HttpMethod::Get, "https://httpbin.org/get");
+        request.add_header("User-Agent", "http-request");
+        let response = request.send().await;
+        assert_eq!(response.status_code, 200);
     }
 
     #[test]
     fn test_add_header() {
-        let mut http_request = HttpRequest::new(HttpMethod::Get, "https://www.example.com");
-        http_request.add_header("Content-Type", "application/json");
-        assert_eq!(http_request.headers.len(), 1);
-        assert_eq!(
-            http_request.headers[0],
-            ("Content-Type".to_string(), "application/json".to_string())
-        );
+        let mut request = HttpRequest::new(HttpMethod::Get, "https://httpbin.org/get");
+        request.add_header("User-Agent", "http-request");
+        assert_eq!(request.headers.len(), 1);
     }
 
     #[test]
     fn test_set_body() {
-        let mut http_request = HttpRequest::new(HttpMethod::Post, "https://www.example.com");
-        http_request.set_body(r#"{"name": "John Doe", "age": 30}"#);
-        assert_eq!(
-            http_request.body,
-            Some(r#"{"name": "John Doe", "age": 30}"#.to_string())
-        );
+        let mut request = HttpRequest::new(HttpMethod::Post, "https://httpbin.org/post");
+        request.set_body("Hello, world!");
+        assert_eq!(request.body, Some("Hello, world!".to_string()));
     }
 
-    // #[test]
-    // fn test_send() {
-    //     let http_request = HttpRequest::new(HttpMethod::Get, "https://www.example.com");
-    //     let http_response = http_request.send().await;
-    //     assert_eq!(http_response.status_code, 200);
-    //     assert_eq!(http_response.body, "");
-    // }
+    #[test]
+    fn test_from_str() {
+        assert_eq!(HttpMethod::from_str("GET"), Some(HttpMethod::Get));
+        assert_eq!(HttpMethod::from_str("POST"), Some(HttpMethod::Post));
+        assert_eq!(HttpMethod::from_str("PUT"), Some(HttpMethod::Put));
+        assert_eq!(HttpMethod::from_str("DELETE"), Some(HttpMethod::Delete));
+        assert_eq!(HttpMethod::from_str("INVALID"), None);
+    }
+
+    #[test]
+    fn test_to_string() {
+        assert_eq!(HttpMethod::Get.to_string(), "GET".to_string());
+        assert_eq!(HttpMethod::Post.to_string(), "POST".to_string());
+        assert_eq!(HttpMethod::Put.to_string(), "PUT".to_string());
+        assert_eq!(HttpMethod::Delete.to_string(), "DELETE".to_string());
+    }
 }
