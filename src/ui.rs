@@ -19,7 +19,7 @@ pub use update::*;
 
 use crate::request::Request;
 
-pub async fn main_ui(request: Request) -> Result<(), Box<dyn Error>> {
+pub async fn main_ui(_request: Request) -> Result<(), Box<dyn Error>> {
     let mut app = App::new();
 
     let backend = CrosstermBackend::new(io::stdout());

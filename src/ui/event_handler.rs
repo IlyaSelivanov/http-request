@@ -10,10 +10,10 @@ pub enum Event {
     Key(KeyEvent),
 }
 
-#[derive(Debug)]
 pub struct EventHandler {
     _tx: mpsc::UnboundedSender<Event>,
     rx: mpsc::UnboundedReceiver<Event>,
+    #[warn(dead_code)]
     task: Option<JoinHandle<()>>,
 }
 

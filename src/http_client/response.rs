@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 pub struct HttpResponse {
     pub status_code: u16,
     pub headers: HashMap<String, String>,
@@ -13,15 +15,19 @@ impl HttpResponse {
         }
     }
 
-    pub fn from_response(response: reqwest::Response) -> Self {
-        let status_code = response.status().as_u16();
-        let headers = response.headers().clone();
-        let body = response.bytes().unwrap().to_vec();
+    pub async fn from_response(response: reqwest::Response) -> Self {
+        let mut http_response = Self::new();
 
-        Self {
-            status_code,
-            headers,
-            body,
+        http_response.status_code = response.status().as_u16();
+
+        for (key, value) in response.headers().iter() {
+            http_response
+                .headers
+                .insert(key.to_string(), value.to_str().unwrap().to_string());
         }
+
+        http_response.body = response.bytes().await.unwrap().to_vec();
+
+        http_response
     }
 }

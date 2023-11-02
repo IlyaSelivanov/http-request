@@ -18,6 +18,7 @@ pub struct Cli {
     ui: Option<bool>,
 }
 
+mod http_client;
 mod request;
 mod ui;
 
