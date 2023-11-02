@@ -287,4 +287,42 @@ mod tests {
         app.quit();
         assert!(app.should_quit);
     }
+
+    #[test]
+    fn test_stateful_list() {
+        let items = vec![1, 2, 3];
+        let mut list = StatefulList::with_items(items);
+
+        assert_eq!(list.state.selected(), None);
+
+        list.next();
+        assert_eq!(list.state.selected(), Some(0));
+
+        list.next();
+        assert_eq!(list.state.selected(), Some(1));
+
+        list.previous();
+        assert_eq!(list.state.selected(), Some(0));
+
+        list.unselect();
+        assert_eq!(list.state.selected(), None);
+    }
+
+    #[test]
+    fn test_app() {
+        let mut app = App::new();
+
+        assert_eq!(app.input, "");
+        assert_eq!(app.input_mode, InputMode::Normal);
+        assert_eq!(app.messages, Vec::<String>::new());
+        assert_eq!(app.cursor_position, 0);
+        assert!(!app.should_quit);
+
+        app.move_cursor_left();
+        assert_eq!(app.cursor_position, 0);
+
+        app.input = String::from("hello");
+        app.move_cursor_right();
+        assert_eq!(app.cursor_position, 1);
+    }
 }
