@@ -6,6 +6,7 @@ pub struct App {
     pub should_quit: bool,
 }
 
+#[derive(PartialEq, Debug)]
 pub enum InputMode {
     Normal,
     Editing,
@@ -68,5 +69,144 @@ impl App {
 
     pub fn quit(&mut self) {
         self.should_quit = true;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new_app() {
+        let app = App::new();
+        assert_eq!(app.input, String::new());
+        assert_eq!(app.input_mode, InputMode::Normal);
+        assert_eq!(app.messages, Vec::<String>::new());
+        assert_eq!(app.cursor_position, 0);
+        assert!(!app.should_quit);
+    }
+
+    #[test]
+    fn test_move_cursor_left() {
+        let mut app = App::new();
+        app.input = String::from("hello");
+        app.cursor_position = 5;
+
+        app.move_cursor_left();
+        assert_eq!(app.cursor_position, 4);
+        app.move_cursor_left();
+        assert_eq!(app.cursor_position, 3);
+        app.move_cursor_left();
+        assert_eq!(app.cursor_position, 2);
+        app.move_cursor_left();
+        assert_eq!(app.cursor_position, 1);
+        app.move_cursor_left();
+        assert_eq!(app.cursor_position, 0);
+        app.move_cursor_left();
+        assert_eq!(app.cursor_position, 0);
+    }
+
+    #[test]
+    fn test_move_cursor_right() {
+        let mut app = App::new();
+        app.input = String::from("hello");
+        app.move_cursor_right();
+        assert_eq!(app.cursor_position, 1);
+        app.move_cursor_right();
+        assert_eq!(app.cursor_position, 2);
+        app.move_cursor_right();
+        assert_eq!(app.cursor_position, 3);
+        app.move_cursor_right();
+        assert_eq!(app.cursor_position, 4);
+        app.move_cursor_right();
+        assert_eq!(app.cursor_position, 5);
+        app.move_cursor_right();
+        assert_eq!(app.cursor_position, 5);
+    }
+
+    #[test]
+    fn test_enter_char() {
+        let mut app = App::new();
+        app.enter_char('h');
+        assert_eq!(app.input, String::from("h"));
+        assert_eq!(app.cursor_position, 1);
+        app.enter_char('e');
+        assert_eq!(app.input, String::from("he"));
+        assert_eq!(app.cursor_position, 2);
+        app.enter_char('l');
+        assert_eq!(app.input, String::from("hel"));
+        assert_eq!(app.cursor_position, 3);
+        app.enter_char('l');
+        assert_eq!(app.input, String::from("hell"));
+        assert_eq!(app.cursor_position, 4);
+        app.enter_char('o');
+        assert_eq!(app.input, String::from("hello"));
+        assert_eq!(app.cursor_position, 5);
+    }
+
+    #[test]
+    fn test_delete_char() {
+        let mut app = App::new();
+        app.input = String::from("hello");
+        app.cursor_position = 5;
+        app.delete_char();
+        assert_eq!(app.input, String::from("hell"));
+        assert_eq!(app.cursor_position, 4);
+        app.delete_char();
+        assert_eq!(app.input, String::from("hel"));
+        assert_eq!(app.cursor_position, 3);
+        app.delete_char();
+        assert_eq!(app.input, String::from("he"));
+        assert_eq!(app.cursor_position, 2);
+        app.delete_char();
+        assert_eq!(app.input, String::from("h"));
+        assert_eq!(app.cursor_position, 1);
+        app.delete_char();
+        assert_eq!(app.input, String::new());
+        assert_eq!(app.cursor_position, 0);
+        app.delete_char();
+        assert_eq!(app.input, String::new());
+        assert_eq!(app.cursor_position, 0);
+    }
+
+    #[test]
+    fn test_clamp_cursor() {
+        let mut app = App::new();
+        assert_eq!(app.clamp_cursor(0), 0);
+        assert_eq!(app.clamp_cursor(1), 0);
+
+        app.input = String::from("hello");
+        assert_eq!(app.clamp_cursor(1), 1);
+        assert_eq!(app.clamp_cursor(2), 2);
+        assert_eq!(app.clamp_cursor(3), 3);
+        assert_eq!(app.clamp_cursor(4), 4);
+        assert_eq!(app.clamp_cursor(5), 5);
+        assert_eq!(app.clamp_cursor(6), 5);
+        assert_eq!(app.clamp_cursor(7), 5);
+    }
+
+    #[test]
+    fn test_reset_cursor() {
+        let mut app = App::new();
+        app.cursor_position = 5;
+        app.reset_cursor();
+        assert_eq!(app.cursor_position, 0);
+    }
+
+    #[test]
+    fn test_submit_message() {
+        let mut app = App::new();
+        app.input = String::from("hello");
+        app.submit_message();
+        assert_eq!(app.input, String::new());
+        assert_eq!(app.messages, vec![String::from("hello")]);
+        assert_eq!(app.cursor_position, 0);
+    }
+
+    #[test]
+    fn test_quit() {
+        let mut app = App::new();
+        app.quit();
+        assert!(app.should_quit);
     }
 }
