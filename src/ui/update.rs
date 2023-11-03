@@ -1,8 +1,15 @@
 use crossterm::event::{KeyCode, KeyEvent};
 
-use super::{App, InputMode};
+use super::{App, Event, InputMode};
 
-pub async fn update(app: &mut App, key_event: KeyEvent) {
+pub async fn update(app: &mut App, event: Event) -> Result<(), Box<dyn std::error::Error>> {
+    if let Event::Key(key) = event {
+        update_key(app, key).await;
+    }
+    Ok(())
+}
+
+pub async fn update_key(app: &mut App, key_event: KeyEvent) {
     match app.input_mode {
         InputMode::Normal => match key_event.code {
             KeyCode::Char('e') => {

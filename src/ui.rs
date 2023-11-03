@@ -26,15 +26,16 @@ pub async fn main_ui() -> Result<(), Box<dyn Error>> {
     let mut tui = Tui::new(terminal, events);
     tui.enter()?;
 
-    while !app.should_quit {
+    loop {
+        let event = tui.events.next().await?;
+
+        update(&mut app, event).await?;
+
         tui.draw(&mut app)?;
-        match tui.events.next().await? {
-            Event::Tick => {}
-            Event::Key(key_event) => update(&mut app, key_event).await,
-            // Event::Mouse(_) => {}
-            // Event::Resize(_, _) => {}
-            _ => {}
-        };
+
+        if app.should_quit {
+            break;
+        }
     }
 
     tui.exit()?;
