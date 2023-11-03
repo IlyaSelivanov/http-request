@@ -13,7 +13,7 @@ pub enum Event {
 pub struct EventHandler {
     _tx: mpsc::UnboundedSender<Event>,
     rx: mpsc::UnboundedReceiver<Event>,
-    #[warn(dead_code)]
+    #[allow(dead_code)]
     task: Option<JoinHandle<()>>,
 }
 

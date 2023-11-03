@@ -47,6 +47,7 @@ impl<T> StatefulList<T> {
         self.state.select(Some(i));
     }
 
+    #[allow(dead_code)]
     fn unselect(&mut self) {
         self.state.select(None);
     }
@@ -271,13 +272,16 @@ mod tests {
         assert_eq!(app.cursor_position, 0);
     }
 
-    #[test]
-    fn test_submit_message() {
+    #[tokio::test]
+    async fn test_submit_message() {
         let mut app = App::new();
-        app.input = String::from("hello");
-        app.submit_message();
+        app.input = String::from("https://httpbin.org/get");
+        app.submit_message().await;
         assert_eq!(app.input, String::new());
-        assert_eq!(app.messages, vec![String::from("hello")]);
+        assert_eq!(
+            app.messages,
+            vec![String::from("https://httpbin.org/get"), String::from("200")]
+        );
         assert_eq!(app.cursor_position, 0);
     }
 

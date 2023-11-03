@@ -66,6 +66,7 @@ impl HttpRequest {
     ///
     /// * `key` - A string slice that holds the header key.
     /// * `value` - A string slice that holds the header value.
+    #[allow(dead_code)]
     pub fn add_header(&mut self, key: &str, value: &str) {
         self.headers.push((key.to_string(), value.to_string()));
     }
