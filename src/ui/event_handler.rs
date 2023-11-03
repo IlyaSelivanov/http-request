@@ -40,11 +40,12 @@ impl EventHandler {
                                     tx.send(Event::Key(key)).unwrap();
                                 }
                             },
-                            crossterm::event::Event::FocusGained => todo!(),
-                            crossterm::event::Event::FocusLost => todo!(),
-                            crossterm::event::Event::Mouse(_) => todo!(),
-                            crossterm::event::Event::Paste(_) => todo!(),
-                            crossterm::event::Event::Resize(_, _) => todo!(), }
+                            crossterm::event::Event::FocusGained => {},
+                            crossterm::event::Event::FocusLost => {},
+                            crossterm::event::Event::Mouse(_) => {},
+                            crossterm::event::Event::Paste(_) => {},
+                            crossterm::event::Event::Resize(_, _) => {},
+                        }
                       }
                       Some(Err(_)) => {
                         tx.send(Event::Error).unwrap();
