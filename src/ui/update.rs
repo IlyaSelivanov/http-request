@@ -1,6 +1,6 @@
 use crossterm::event::{KeyCode, KeyEvent};
 
-use super::{App, Event, InputMode};
+use super::{tui::Event, App, InputMode};
 
 pub async fn update(app: &mut App, event: Event) -> Result<(), Box<dyn std::error::Error>> {
     if let Event::Key(key) = event {
