@@ -21,6 +21,7 @@ pub struct Cli {
 mod action;
 mod components;
 mod http_client;
+mod input;
 mod ui;
 
 #[tokio::main]
