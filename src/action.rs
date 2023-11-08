@@ -5,6 +5,7 @@ pub enum Action {
     Render,
     Update,
     None,
-    EnterEditUrlMode,
-    EnterNormalMode,
+    EnterUrlInsert,
+    EnterNormal,
+    CompleteInput(String),
 }
