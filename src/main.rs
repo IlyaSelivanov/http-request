@@ -51,6 +51,6 @@ async fn run_cli(request: HttpRequest) -> Result<(), Box<dyn Error>> {
 
 async fn run_ui() -> Result<(), Box<dyn Error>> {
     let mut app = App::new();
-    app.run().await;
+    app.run().await?;
     Ok(())
 }

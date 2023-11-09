@@ -10,4 +10,5 @@ pub enum Action {
     EnterNormal,
     CompleteInput(String),
     Resize(u16, u16),
+    Error(String),
 }

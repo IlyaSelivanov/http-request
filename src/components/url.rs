@@ -63,7 +63,8 @@ impl Component for Url {
                         if let Err(e) =
                             sender.send(Action::CompleteInput(self.input.value().to_string()))
                         {
-                            anyhow::anyhow!("Failed to send action: {:?}", e);
+                            let _ = sender
+                                .send(Action::Error(format!("Failed to send action: {:?}", e)));
                         }
                     }
                     Action::EnterNormal

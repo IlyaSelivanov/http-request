@@ -70,11 +70,13 @@ impl Tui {
         })
     }
 
+    #[allow(dead_code)]
     pub fn tick_rate(mut self, tick_rate: f64) -> Self {
         self.tick_rate = tick_rate;
         self
     }
 
+    #[allow(dead_code)]
     pub fn frame_rate(mut self, frame_rate: f64) -> Self {
         self.frame_rate = frame_rate;
         self
@@ -86,6 +88,7 @@ impl Tui {
         self
     }
 
+    #[allow(dead_code)]
     pub fn paste(mut self, paste: bool) -> Self {
         self.paste = paste;
         self
@@ -186,6 +189,7 @@ impl Tui {
         self.cancellation_token.cancel();
     }
 
+    #[allow(dead_code)]
     pub fn resume(&mut self) -> Result<(), Error> {
         self.enter()?;
         Ok(())

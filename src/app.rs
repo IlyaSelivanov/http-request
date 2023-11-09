@@ -98,10 +98,6 @@ impl App {
     //     self.reset_cursor();
     // }
 
-    pub fn quit(&mut self) {
-        self.should_quit = true;
-    }
-
     pub fn select_next_method(&mut self) {
         self.methods.next();
     }
@@ -131,47 +127,39 @@ impl App {
         }
 
         loop {
-            if let e = tui.next().await? {
-                match e {
-                    tui::Event::Quit => action_tx.send(Action::Quit)?,
-                    tui::Event::Tick => action_tx.send(Action::Tick)?,
-                    tui::Event::Render => action_tx.send(Action::Render)?,
-                    tui::Event::Resize(x, y) => action_tx.send(Action::Resize(x, y))?,
-                    tui::Event::Key(key) => match key.code {
-                        KeyCode::Enter => action_tx.send(Action::EnterUrlInsert)?,
-                        KeyCode::Esc => action_tx.send(Action::EnterNormal)?,
-                        _ => {}
-                    },
+            let e = tui.next().await?;
+            match e {
+                tui::Event::Quit => action_tx.send(Action::Quit)?,
+                tui::Event::Tick => action_tx.send(Action::Tick)?,
+                tui::Event::Render => action_tx.send(Action::Render)?,
+                tui::Event::Resize(x, y) => action_tx.send(Action::Resize(x, y))?,
+                tui::Event::Key(key) => match key.code {
+                    KeyCode::Enter => action_tx.send(Action::EnterUrlInsert)?,
+                    KeyCode::Esc => action_tx.send(Action::EnterNormal)?,
+                    KeyCode::Char('q') => action_tx.send(Action::Quit)?,
                     _ => {}
-                }
-                for component in self.components.iter_mut() {
-                    if let Some(action) = component.handle_events(Some(e.clone()))? {
-                        action_tx.send(action)?;
-                    }
+                },
+                _ => {}
+            }
+            for component in self.components.iter_mut() {
+                if let Some(action) = component.handle_events(Some(e.clone()))? {
+                    action_tx.send(action)?;
                 }
             }
 
             while let Ok(action) = action_rx.try_recv() {
-                // if action != Action::Tick && action != Action::Render {
-                //     log::debug!("{action:?}");
-                // }
                 match action {
-                    // Action::Tick => {
-                    //     self.last_tick_key_events.drain(..);
-                    // }
                     Action::Quit => self.should_quit = true,
-                    // Action::Suspend => self.should_suspend = true,
-                    // Action::Resume => self.should_suspend = false,
                     Action::Resize(w, h) => {
                         tui.resize(Rect::new(0, 0, w, h))?;
                         tui.draw(|f| {
                             for component in self.components.iter_mut() {
                                 let r = component.render(f, f.size());
-                                // if let Err(e) = r {
-                                //     action_tx
-                                //         .send(Action::Error(format!("Failed to draw: {:?}", e)))
-                                //         .unwrap();
-                                // }
+                                if let Err(e) = r {
+                                    action_tx
+                                        .send(Action::Error(format!("Failed to draw: {:?}", e)))
+                                        .unwrap();
+                                }
                             }
                         })?;
                     }
@@ -179,34 +167,28 @@ impl App {
                         tui.draw(|f| {
                             for component in self.components.iter_mut() {
                                 let r = component.render(f, f.size());
-                                // if let Err(e) = r {
-                                //     action_tx
-                                //         .send(Action::Error(format!("Failed to draw: {:?}", e)))
-                                //         .unwrap();
-                                // }
+                                if let Err(e) = r {
+                                    action_tx
+                                        .send(Action::Error(format!("Failed to draw: {:?}", e)))
+                                        .unwrap();
+                                }
                             }
                         })?;
                     }
                     _ => {}
                 }
+
                 for component in self.components.iter_mut() {
                     if let Some(action) = component.update(action.clone())? {
                         action_tx.send(action)?
                     };
                 }
             }
-            // if self.should_suspend {
-            //     tui.suspend()?;
-            //     action_tx.send(Action::Resume)?;
-            //     tui = tui::Tui::new()?;
-            //     tui.tick_rate(self.tick_rate);
-            //     tui.frame_rate(self.frame_rate);
-            //     tui.enter()?;
-            // } else if self.should_quit {
-            //     tui.stop()?;
-            //     break;
-            // }
+            if self.should_quit {
+                break;
+            }
         }
+
         tui.exit()?;
         Ok(())
     }
