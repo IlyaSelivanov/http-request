@@ -1,8 +1,8 @@
 use std::error::Error;
 
+use app::App;
 use clap::{command, Parser};
 use http_client::{HttpMethod, HttpRequest};
-use ui::main_ui;
 
 #[derive(Parser)]
 #[command(name = "http-request")]
@@ -19,10 +19,11 @@ pub struct Cli {
 }
 
 mod action;
+mod app;
 mod components;
 mod http_client;
 mod input;
-mod ui;
+mod tui;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -49,5 +50,7 @@ async fn run_cli(request: HttpRequest) -> Result<(), Box<dyn Error>> {
 }
 
 async fn run_ui() -> Result<(), Box<dyn Error>> {
-    main_ui().await
+    let mut app = App::new();
+    app.run().await;
+    Ok(())
 }

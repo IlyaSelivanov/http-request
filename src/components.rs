@@ -3,9 +3,9 @@ use crossterm::event::{KeyEvent, MouseEvent};
 use ratatui::{prelude::Rect, Frame};
 use tokio::sync::mpsc::UnboundedSender;
 
-use crate::{action::Action, ui::Event};
+use crate::{action::Action, tui::Event};
 
-mod url;
+pub mod url;
 
 pub trait Component {
     #[allow(unused_variables)]

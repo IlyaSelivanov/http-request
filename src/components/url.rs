@@ -1,5 +1,11 @@
-use anyhow::Error;
+use anyhow::{Error, Ok};
 use crossterm::event::{KeyCode, KeyEvent};
+use ratatui::{
+    prelude::{Constraint, Direction, Layout},
+    style::{Color, Modifier, Style, Stylize},
+    text::{Line, Text},
+    widgets::{Block, Borders, Paragraph},
+};
 use tokio::sync::mpsc::UnboundedSender;
 
 use crate::{action::Action, input::Input};
@@ -19,6 +25,15 @@ pub struct Url {
 }
 
 impl Url {
+    pub fn new() -> Self {
+        Self {
+            text: String::new(),
+            mode: Mode::Normal,
+            input: Input::new(),
+            action_tx: None,
+        }
+    }
+
     pub fn add(&mut self, s: String) {
         self.text = s;
     }
@@ -81,6 +96,55 @@ impl Component for Url {
         f: &mut ratatui::Frame<'_>,
         rect: ratatui::prelude::Rect,
     ) -> Result<(), anyhow::Error> {
-        todo!()
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([Constraint::Length(1), Constraint::Length(1)])
+            .split(rect);
+
+        let (msg, style) = match self.mode {
+            Mode::Normal => (
+                vec![
+                    "Press ".into(),
+                    "q".bold(),
+                    " to exit, ".into(),
+                    "e".bold(),
+                    " to start editing.".bold(),
+                ],
+                Style::default().add_modifier(Modifier::RAPID_BLINK),
+            ),
+            Mode::Insert => (
+                vec![
+                    "Press ".into(),
+                    "Esc".bold(),
+                    " to stop editing, ".into(),
+                    "Enter".bold(),
+                    " to record the message".into(),
+                ],
+                Style::default(),
+            ),
+        };
+        let mut text = Text::from(Line::from(msg));
+        text.patch_style(style);
+        let help_message = Paragraph::new(text);
+        f.render_widget(help_message, chunks[0]);
+
+        let input = Paragraph::new(self.input.input.as_str())
+            .style(match self.mode {
+                Mode::Normal => Style::default(),
+                Mode::Insert => Style::default().fg(Color::Yellow),
+            })
+            .block(Block::default().borders(Borders::ALL).title("Url"));
+        f.render_widget(input, chunks[1]);
+        match self.mode {
+            Mode::Normal => Ok(()),
+
+            Mode::Insert => {
+                f.set_cursor(
+                    chunks[1].x + self.input.cursor_position as u16 + 1,
+                    chunks[1].y + 1,
+                );
+                Ok(())
+            }
+        }
     }
 }

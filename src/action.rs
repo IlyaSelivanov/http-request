@@ -1,4 +1,5 @@
 #[allow(dead_code)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Action {
     Quit,
     Tick,
@@ -8,4 +9,5 @@ pub enum Action {
     EnterUrlInsert,
     EnterNormal,
     CompleteInput(String),
+    Resize(u16, u16),
 }

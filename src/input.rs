@@ -4,6 +4,13 @@ pub struct Input {
 }
 
 impl Input {
+    pub fn new() -> Self {
+        Self {
+            input: String::new(),
+            cursor_position: 0,
+        }
+    }
+
     pub fn move_cursor_left(&mut self) {
         let cursor_moved_left = self.cursor_position.saturating_sub(1);
         self.cursor_position = self.clamp_cursor(cursor_moved_left);
