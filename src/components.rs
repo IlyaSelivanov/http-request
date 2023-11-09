@@ -5,6 +5,7 @@ use tokio::sync::mpsc::UnboundedSender;
 
 use crate::{action::Action, tui::Event};
 
+pub mod method;
 pub mod url;
 
 pub trait Component {

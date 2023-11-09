@@ -1,6 +1,6 @@
 use anyhow::Error;
 use crossterm::event::KeyCode;
-use ratatui::{prelude::Rect, widgets::ListState};
+use ratatui::prelude::Rect;
 use tokio::sync::mpsc;
 
 use crate::{
@@ -9,64 +9,12 @@ use crate::{
     tui,
 };
 
-/// A generic struct representing a stateful list.
-/// This struct is used to represent a list of items that can be scrolled through and selected.
-/// It keeps track of the current selected index and provides methods for updating the list and
-/// selecting items.
-pub struct StatefulList<T> {
-    pub state: ListState,
-    pub items: Vec<T>,
-}
-
-impl<T> StatefulList<T> {
-    fn with_items(items: Vec<T>) -> StatefulList<T> {
-        StatefulList {
-            state: ListState::default(),
-            items,
-        }
-    }
-
-    fn next(&mut self) {
-        let i = match self.state.selected() {
-            Some(i) => {
-                if i >= self.items.len() - 1 {
-                    0
-                } else {
-                    i + 1
-                }
-            }
-            None => 0,
-        };
-        self.state.select(Some(i));
-    }
-
-    fn previous(&mut self) {
-        let i = match self.state.selected() {
-            Some(i) => {
-                if i == 0 {
-                    self.items.len() - 1
-                } else {
-                    i - 1
-                }
-            }
-            None => 0,
-        };
-        self.state.select(Some(i));
-    }
-
-    #[allow(dead_code)]
-    fn unselect(&mut self) {
-        self.state.select(None);
-    }
-}
-
 /// A struct representing the application.
 /// This struct contains the main logic for the application, including handling user input and
 /// displaying output to the user.
 pub struct App {
     pub messages: Vec<String>,
     pub should_quit: bool,
-    pub methods: StatefulList<String>,
     pub components: Vec<Box<dyn Component>>,
 }
 
@@ -76,12 +24,6 @@ impl App {
         App {
             messages: Vec::new(),
             should_quit: false,
-            methods: StatefulList::with_items(vec![
-                String::from("GET"),
-                String::from("POST"),
-                String::from("PUT"),
-                String::from("DELETE"),
-            ]),
             components: vec![Box::new(url)],
         }
     }
@@ -97,14 +39,6 @@ impl App {
     //     self.input.clear();
     //     self.reset_cursor();
     // }
-
-    pub fn select_next_method(&mut self) {
-        self.methods.next();
-    }
-
-    pub fn select_previous_method(&mut self) {
-        self.methods.previous();
-    }
 
     pub async fn run(&mut self) -> Result<(), Error> {
         let (action_tx, mut action_rx) = mpsc::unbounded_channel();
@@ -134,7 +68,7 @@ impl App {
                 tui::Event::Render => action_tx.send(Action::Render)?,
                 tui::Event::Resize(x, y) => action_tx.send(Action::Resize(x, y))?,
                 tui::Event::Key(key) => match key.code {
-                    KeyCode::Enter => action_tx.send(Action::EnterUrlInsert)?,
+                    KeyCode::Char('e') => action_tx.send(Action::EnterUrlInsert)?,
                     KeyCode::Esc => action_tx.send(Action::EnterNormal)?,
                     KeyCode::Char('q') => action_tx.send(Action::Quit)?,
                     _ => {}
